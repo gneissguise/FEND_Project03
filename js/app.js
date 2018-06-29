@@ -35,12 +35,13 @@ function checkCollisions(player, enemies) {
 }
 
 // Enemies our player must avoid
-const Enemy = (startingX, startingY) => {
+function Enemy(startingX, startingY) {
   this.sprite = 'images/enemy-bug.png';
   this.startX = startingX;
   this.x = startingX;
   this.startY = startingY;
   this.y = startingY;
+  this.coefficient = Math.random();
   this.collision = [
     0,
     112,
@@ -55,9 +56,9 @@ const Enemy = (startingX, startingY) => {
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
-Enemy.prototype.update = (dt) => {
+Enemy.prototype.update = function(dt) {
   if (this.x < CHAR_MAX_X + 101) {
-    this.x += MOVE_FACTOR * dt;
+    this.x += (MOVE_FACTOR + this.coefficient) * dt;
     this.y = this.y + Math.sin(2 * Math.PI * (this.x / 50)) * 1.333;
   } else {
     this.x = this.startX;
@@ -66,11 +67,11 @@ Enemy.prototype.update = (dt) => {
 };
 
 // Draw the enemy on the screen, required method for game
-Enemy.prototype.render = () => {
+Enemy.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-const Player = () => {
+function Player() {
   this.sprite = 'images/char-boy.png';
   this.startX = CHAR_STARTING_X;
   this.x = this.startX;
@@ -88,20 +89,20 @@ const Player = () => {
   ];
 };
 
-Player.prototype.update = () => {
+Player.prototype.update = function() {
   checkCollisions(player, allEnemies);
 };
 
-Player.prototype.render = () => {
+Player.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-Player.prototype.reset = () => {
+Player.prototype.reset = function() {
   this.x = this.startX;
   this.y = this.startY;
 };
 
-Player.prototype.handleInput = (keyInp) => {
+Player.prototype.handleInput = function(keyInp) {
   switch (keyInp) {
     case 'left':
       if (this.x > CHAR_MIN_X) {
