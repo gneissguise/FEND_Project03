@@ -1,8 +1,8 @@
 /* Resources.js This is simply an image loading utility. It eases the process of loading image files so that they can be used within your game. It also includes a simple "caching" layer so it will reuse cached images if you attempt to load the same image multiple times. */
-(function() {
-  var resourceCache = {};
-  var loading = [];
-  var readyCallbacks = [];
+(() => {
+  let resourceCache = {};
+  let loading = [];
+  let readyCallbacks = [];
 
   /* This is the publicly accessible image loading function. It accepts
      * an array of strings pointing to image files or a string for a single
@@ -40,8 +40,8 @@
       /* This URL has not been previously loaded and is not present
              * within our cache; we'll need to load this image.
              */
-      var img = new Image();
-      img.onload = function() {
+      let img = new Image();
+      img.onload = () => {
         /* Once our image has properly loaded, add it to our cache
                  * so that we can simply return this image if the developer
                  * attempts to load this file in the future.
@@ -52,7 +52,7 @@
                  * call all of the onReady() callbacks we have defined.
                  */
         if (isReady()) {
-          readyCallbacks.forEach(function(func) {
+          readyCallbacks.forEach((func) => {
             func();
           });
         }
@@ -80,8 +80,8 @@
      * for loading have in fact been properly loaded.
      */
   function isReady() {
-    var ready = true;
-    for (var k in resourceCache) {
+    let ready = true;
+    for (let k in resourceCache) {
       if (resourceCache.hasOwnProperty(k) && !resourceCache[k]) {
         ready = false;
       }

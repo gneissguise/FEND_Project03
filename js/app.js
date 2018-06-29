@@ -1,22 +1,25 @@
-// These global 'constants' will serve as the bounds for
+// These global constants will serve as the bounds for
 // our player character.
 
-var CHAR_MIN_X = 0;
-var CHAR_MAX_X = 404;
-var CHAR_MIN_Y = 0;
-var CHAR_MAX_Y = 404;
-var CHAR_STARTING_X = 202;
-var CHAR_STARTING_Y = 303;
-var MOVE_FACTOR = 50.5;
-var _DEBUG = true;
+const CHAR_MIN_X = 0;
+const CHAR_MAX_X = 404;
+const CHAR_MIN_Y = 0;
+const CHAR_MAX_Y = 404;
+const CHAR_STARTING_X = 202;
+const CHAR_STARTING_Y = 303;
+const MOVE_FACTOR = 50.5;
+const _DEBUG = true;
 
 function checkCollisions(player, enemies) {
-  for (var enemy of enemies) {
+  for (let enemy of enemies) {
     // Enemy collision box:    0, 112 | 100, 112 |   0, 140 | 100, 140
     // enemy.x + , enemy.y + 11
     // Player collision box:  34, 126 |  68, 126 |  44, 138 |  60, 138
 
-    if ((enemy.x + enemy.collision[0]) < (player.x + player.collision[2]) && (enemy.x + enemy.collision[2]) > (player.x + player.collision[0]) && (enemy.y + enemy.collision[1]) < (player.y + player.collision[5]) && (enemy.y + enemy.collision[5]) > (player.y + player.collision[1])) {
+    if ((enemy.x + enemy.collision[0]) < (player.x + player.collision[2]) &&
+        (enemy.x + enemy.collision[2]) > (player.x + player.collision[0]) &&
+        (enemy.y + enemy.collision[1]) < (player.y + player.collision[5]) &&
+        (enemy.y + enemy.collision[5]) > (player.y + player.collision[1])) {
 
       // Collision detected
       //	    particle_explosion.create(ctx, player.x / 2, player.y / 2, 128);
@@ -32,7 +35,7 @@ function checkCollisions(player, enemies) {
 }
 
 // Enemies our player must avoid
-var Enemy = function(startingX, startingY) {
+const Enemy = (startingX, startingY) => {
   this.sprite = 'images/enemy-bug.png';
   this.startX = startingX;
   this.x = startingX;
@@ -52,7 +55,7 @@ var Enemy = function(startingX, startingY) {
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
+Enemy.prototype.update = (dt) => {
   if (this.x < CHAR_MAX_X + 101) {
     this.x += MOVE_FACTOR * dt;
     this.y = this.y + Math.sin(2 * Math.PI * (this.x / 50)) * 1.333;
@@ -63,11 +66,11 @@ Enemy.prototype.update = function(dt) {
 };
 
 // Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
+Enemy.prototype.render = () => {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-var Player = function() {
+const Player = () => {
   this.sprite = 'images/char-boy.png';
   this.startX = CHAR_STARTING_X;
   this.x = this.startX;
@@ -85,20 +88,20 @@ var Player = function() {
   ];
 };
 
-Player.prototype.update = function() {
+Player.prototype.update = () => {
   checkCollisions(player, allEnemies);
 };
 
-Player.prototype.render = function() {
+Player.prototype.render = () => {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-Player.prototype.reset = function() {
+Player.prototype.reset = () => {
   this.x = this.startX;
   this.y = this.startY;
 };
 
-Player.prototype.handleInput = function(keyInp) {
+Player.prototype.handleInput = (keyInp) => {
   switch (keyInp) {
     case 'left':
       if (this.x > CHAR_MIN_X) {
@@ -123,16 +126,16 @@ Player.prototype.handleInput = function(keyInp) {
   };
 };
 
-var allEnemies = [
+const allEnemies = [
   new Enemy(-50, 50),
   new Enemy(-202, 135),
   new Enemy(-101, 215)
 ];
 
-var player = new Player();
+const player = new Player();
 
-document.addEventListener('keyup', function(e) {
-  var allowedKeys = {
+document.addEventListener('keyup', (e) => {
+  const allowedKeys = {
     37: 'left',
     38: 'up',
     39: 'right',
