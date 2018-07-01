@@ -19,6 +19,13 @@ const SPRITES = {
 };
 let gamePause = false;
 
+function resetAll(){
+  player.reset();
+  allEnemies.forEach((enemy) => {
+    enemy.reset();
+  });
+}
+
 function checkCollisions(player, enemies) {
   for (let enemy of enemies) {
     // Enemy collision box:    0, 112 | 100, 112 |   0, 140 | 100, 140
@@ -35,23 +42,30 @@ function checkCollisions(player, enemies) {
       //	    particle_explosion.update();
       gamePause = true;
       $("canvas").fadeOut("slow");
-      player.reset();
-      allEnemies.forEach((enemy) => {
-        enemy.reset();
-      });
+      resetAll();
       $("canvas").fadeIn("slow");
       setTimeout(() => {
         gamePause = false;
+        player.lives--;
+        if (player.lives === 0) {
+          player.lives = 3;
+          player.level = 1;
+        }
       }, 1000);
 
       return;
+    }
+
+    if (player.y <= CHAR_MIN_Y) {
+      player.level++;
+      resetAll();
     }
   }
 }
 
 // Enemies our player must avoid
 function Enemy(startingX, startingY) {
-  this.sprite = 'images/enemy-bug.png';
+  this.sprite = SPRITES['enemy'];
   this.startX = startingX;
   this.x = startingX;
   this.startY = startingY;
@@ -88,14 +102,14 @@ Enemy.prototype.reset = function() {
 }
 
 function Player() {
-  this.sprite = 'images/char-boy.png';
+  this.sprite = SPRITES['player'];
   this.startX = CHAR_STARTING_X;
   this.x = this.startX;
   this.startY = CHAR_STARTING_Y;
   this.y = this.startY;
   this.lives = 3;
   this.score = 0;
-  this.crossings = 0;
+  this.level = 1;
   this.collision = [
     34, 126,
     68, 126,
@@ -110,12 +124,16 @@ Player.prototype.update = function() {
 
 Player.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+  this.showStatus();
 };
 
 Player.prototype.showStatus = function() {
   for (let i = 0; i < this.lives; i++){
-    ctx.drawImage(Resources.get(),);
+    let pos = (i + 1) * 32;
+    ctx.drawImage(Resources.get(SPRITES['heart']), 370 + pos, 0, 32, 48);
   }
+
+  ctx.fillText(`Level: ${player.level}`, 10, 35);
 };
 
 Player.prototype.reset = function() {

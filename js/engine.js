@@ -26,6 +26,7 @@ const Engine = ((global) => {
 
   canvas.width = 505;
   canvas.height = 606;
+  ctx.font = "30px sans-serif";
 
   doc.body.appendChild(canvas);
 
@@ -109,12 +110,12 @@ const Engine = ((global) => {
          * for that particular row of the game level.
          */
     const rowImages = [
-        'images/water-block.png', // Top row is water
-        'images/stone-block.png', // Row 1 of 3 of stone
-        'images/stone-block.png', // Row 2 of 3 of stone
-        'images/stone-block.png', // Row 3 of 3 of stone
-        'images/grass-block.png', // Row 1 of 2 of grass
-        'images/grass-block.png' // Row 2 of 2 of grass
+        SPRITES['water'], // Top row is water
+        SPRITES['stone'], // Row 1 of 3 of stone
+        SPRITES['stone'], // Row 2 of 3 of stone
+        SPRITES['stone'], // Row 3 of 3 of stone
+        SPRITES['grass'], // Row 1 of 2 of grass
+        SPRITES['grass'] // Row 2 of 2 of grass
       ],
       numRows = 6,
       numCols = 5;
@@ -164,7 +165,10 @@ const Engine = ((global) => {
      * those sorts of things. It's only called once by the init() method.
      */
   function reset() {
-    // noop
+    player.reset();
+    allEnemies.forEach((enemy) => {
+      enemy.reset();
+    });
   }
 
   /* Go ahead and load all of the images we know we're going to need to
