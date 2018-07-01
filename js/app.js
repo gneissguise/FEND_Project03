@@ -6,9 +6,18 @@ const CHAR_MAX_X = 404;
 const CHAR_MIN_Y = 0;
 const CHAR_MAX_Y = 404;
 const CHAR_STARTING_X = 202;
-const CHAR_STARTING_Y = 303;
+const CHAR_STARTING_Y = 404;
 const MOVE_FACTOR = 50.5;
 const _DEBUG = true;
+const SPRITES = {
+  'stone': 'images/stone-block.png',
+  'water': 'images/water-block.png',
+  'grass': 'images/grass-block.png',
+  'enemy': 'images/enemy-bug.png',
+  'player': 'images/char-boy.png',
+  'heart': 'images/Heart.png'
+};
+let gamePause = false;
 
 function checkCollisions(player, enemies) {
   for (let enemy of enemies) {
@@ -24,10 +33,16 @@ function checkCollisions(player, enemies) {
       // Collision detected
       //	    particle_explosion.create(ctx, player.x / 2, player.y / 2, 128);
       //	    particle_explosion.update();
-
+      gamePause = true;
       $("canvas").fadeOut("slow");
       player.reset();
+      allEnemies.forEach((enemy) => {
+        enemy.reset();
+      });
       $("canvas").fadeIn("slow");
+      setTimeout(() => {
+        gamePause = false;
+      }, 1000);
 
       return;
     }
@@ -41,16 +56,12 @@ function Enemy(startingX, startingY) {
   this.x = startingX;
   this.startY = startingY;
   this.y = startingY;
-  this.coefficient = Math.random();
+  this.coefficient = Math.random() * 30;
   this.collision = [
-    0,
-    112,
-    100,
-    112,
-    0,
-    140,
-    100,
-    140
+      0, 112,
+    100, 112,
+      0, 140,
+    100, 140
   ];
 };
 
@@ -71,21 +82,25 @@ Enemy.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+Enemy.prototype.reset = function() {
+  this.x = this.startX;
+  this.y = this.startY;
+}
+
 function Player() {
   this.sprite = 'images/char-boy.png';
   this.startX = CHAR_STARTING_X;
   this.x = this.startX;
   this.startY = CHAR_STARTING_Y;
   this.y = this.startY;
+  this.lives = 3;
+  this.score = 0;
+  this.crossings = 0;
   this.collision = [
-    34,
-    126,
-    68,
-    126,
-    44,
-    138,
-    60,
-    138
+    34, 126,
+    68, 126,
+    44, 138,
+    60, 138
   ];
 };
 
@@ -95,6 +110,12 @@ Player.prototype.update = function() {
 
 Player.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+Player.prototype.showStatus = function() {
+  for (let i = 0; i < this.lives; i++){
+    ctx.drawImage(Resources.get(),);
+  }
 };
 
 Player.prototype.reset = function() {
@@ -143,5 +164,13 @@ document.addEventListener('keyup', (e) => {
     40: 'down'
   };
 
-  player.handleInput(allowedKeys[e.keyCode]);
+  if (e.keyCode === 80){
+    gamePause = !gamePause;
+  }
+
+  console.log("key code: " + e.keyCode);
+
+  if (!gamePause) {
+    player.handleInput(allowedKeys[e.keyCode]);
+  }
 });
