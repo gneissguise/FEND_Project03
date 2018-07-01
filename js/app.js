@@ -19,6 +19,14 @@ const SPRITES = {
 };
 let gamePause = false;
 
+function drawWindow(width, height) {
+  ctx.globalAlpha = 0.75;
+  ctx.fillRect((canvas_width / 2) - (width / 2),
+               (canvas_height / 2) - (width / 2),
+               width, height);
+  ctx.globalAlpha = 1.0;
+}
+
 function resetAll(){
   player.reset();
   allEnemies.forEach((enemy) => {
@@ -47,17 +55,25 @@ function checkCollisions(player, enemies) {
       setTimeout(() => {
         gamePause = false;
         player.lives--;
+
+        // If player runs out of lives, game over.
         if (player.lives === 0) {
           player.lives = 3;
           player.level = 1;
+          player.resetDifficulty();
         }
       }, 1000);
 
       return;
     }
 
+    // See if player has reached the water,and then increase level and difficulty
     if (player.y <= CHAR_MIN_Y) {
+      console.log("Increase level");
       player.level++;
+      console.log("Increase difficulty");
+      player.increaseDifficulty();
+      console.log("Reset player and enemies");
       resetAll();
     }
   }
@@ -70,7 +86,7 @@ function Enemy(startingX, startingY) {
   this.x = startingX;
   this.startY = startingY;
   this.y = startingY;
-  this.coefficient = Math.random() * 30;
+  this.coefficient = Math.random() * 5;
   this.collision = [
       0, 112,
     100, 112,
@@ -101,6 +117,10 @@ Enemy.prototype.reset = function() {
   this.y = this.startY;
 }
 
+Enemy.prototype.setDifficulty = function() {
+  this.coefficient = (Math.random() + player.difficulty) * 5;
+}
+
 function Player() {
   this.sprite = SPRITES['player'];
   this.startX = CHAR_STARTING_X;
@@ -108,8 +128,8 @@ function Player() {
   this.startY = CHAR_STARTING_Y;
   this.y = this.startY;
   this.lives = 3;
-  this.score = 0;
   this.level = 1;
+  this.difficulty = 0;
   this.collision = [
     34, 126,
     68, 126,
@@ -166,6 +186,20 @@ Player.prototype.handleInput = function(keyInp) {
   };
 };
 
+Player.prototype.increaseDifficulty = function(){
+  this.difficulty += 10;
+  allEnemies.forEach((enemy) => {
+    enemy.setDifficulty();
+  });
+}
+
+Player.prototype.resetDifficulty = function() {
+  this.difficulty = 0;
+  allEnemies.forEach((enemy) => {
+    enemy.setDifficulty();
+  });
+}
+
 const allEnemies = [
   new Enemy(-50, 50),
   new Enemy(-202, 135),
@@ -182,6 +216,7 @@ document.addEventListener('keyup', (e) => {
     40: 'down'
   };
 
+  // If player hits the P key, then pause.
   if (e.keyCode === 80){
     gamePause = !gamePause;
   }
