@@ -26,9 +26,12 @@ const Engine = ((global) => {
 
   canvas.width = 505;
   canvas.height = 606;
-  ctx.font = "30px sans-serif";
+  canvas.id = 'canvas';
+  ctx.font = '30px sans-serif';
 
   doc.body.appendChild(canvas);
+
+  canvas = document.getElementById('canvas');
 
   /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -175,12 +178,12 @@ const Engine = ((global) => {
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
      */
-  Resources.load(['images/stone-block.png',
-                  'images/water-block.png',
-                  'images/grass-block.png',
-                  'images/enemy-bug.png',
-                  'images/char-boy.png',
-                  'images/Heart.png']);
+  Resources.load([SPRITES['stone'],
+                  SPRITES['water'],
+                  SPRITES['grass'],
+                  SPRITES['enemy'],
+                  SPRITES['player'],
+                  SPRITES['heart']]);
 
   Resources.onReady(init);
 
@@ -189,6 +192,7 @@ const Engine = ((global) => {
      * from within their app.js files.
      */
   global.ctx = ctx;
+  global.canvas = canvas;
   global.canvas_width = canvas.width;
   global.canvas_height = canvas.height;
 

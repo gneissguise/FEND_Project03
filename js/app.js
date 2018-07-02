@@ -17,15 +17,8 @@ const SPRITES = {
   'player': 'images/char-boy.png',
   'heart': 'images/Heart.png'
 };
-let gamePause = false;
 
-function drawWindow(width, height) {
-  ctx.globalAlpha = 0.75;
-  ctx.fillRect((canvas_width / 2) - (width / 2),
-               (canvas_height / 2) - (width / 2),
-               width, height);
-  ctx.globalAlpha = 1.0;
-}
+let gamePause = false;
 
 function resetAll(){
   player.reset();
@@ -53,15 +46,17 @@ function checkCollisions(player, enemies) {
       resetAll();
       $("canvas").fadeIn("slow");
       setTimeout(() => {
-        gamePause = false;
         player.lives--;
 
         // If player runs out of lives, game over.
         if (player.lives === 0) {
+          gameWindow.render('lose');
           player.lives = 3;
           player.level = 1;
           player.resetDifficulty();
+          return;
         }
+        gamePause = false;
       }, 1000);
 
       return;
@@ -78,6 +73,82 @@ function checkCollisions(player, enemies) {
     }
   }
 }
+
+function Window() {
+  this.width = 0;
+  this.height = 0;
+  this.message = "";
+  this.buttonCoords = [];
+}
+
+Window.prototype.drawWindow = function() {
+  gamePause = true;
+  ctx.fillStyle = "#000000";
+  ctx.globalAlpha = 0.75;
+  this.top = (canvas_height / 2) - (this.height / 2);
+  this.left = (canvas_width / 2) - (this.width / 2);
+  ctx.fillRect(this.left, this.top,
+               this.width, this.height);
+  ctx.globalAlpha = 1.0;
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(this.left, this.top,
+                 this.width, this.height);
+}
+
+Window.prototype.drawButton = function(title) {
+  let bWidth = 100;
+  let bHeight = 40;
+  let bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
+  let bTop = (this.top + this.height) - (bHeight + 3);
+  let grd = ctx.createLinearGradient(0, 0, 0, (bHeight * 2));
+  this.buttonCoords.push(
+    {'top': bTop,
+    'left': bLeft,
+    'width': bWidth,
+    'height': bHeight,
+    'func': function() {
+      gamePause = false;
+      resetAll();
+    }}
+  );
+  grd.addColorStop(0, '#9dbdf9');
+  grd.addColorStop(1, '#2d63d7');
+  ctx.fillStyle = grd;
+  ctx.fillRect(bLeft, bTop, bWidth, bHeight);
+  ctx.font = '12px sans-serif';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(title,
+               bLeft + (bWidth / 2),
+               bTop + (bHeight / 2));
+}
+
+Window.prototype.alert = function() {
+  this.width = 300;
+  this.height = 200;
+  this.drawWindow();
+  ctx.font = '30px sans-serif';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(this.message,
+               this.left + (this.width / 2),
+               this.top + (this.height / 2));
+}
+
+Window.prototype.render = function(type) {
+  switch(type) {
+    case "lose":
+      this.message = "You Lose!";
+      this.alert();
+      this.drawButton("Play Again?");
+      break;
+  }
+}
+
+const gameWindow = new Window();
 
 // Enemies our player must avoid
 function Enemy(startingX, startingY) {
@@ -127,7 +198,7 @@ function Player() {
   this.x = this.startX;
   this.startY = CHAR_STARTING_Y;
   this.y = this.startY;
-  this.lives = 3;
+  this.lives = 1;
   this.level = 1;
   this.difficulty = 0;
   this.collision = [
@@ -152,7 +223,10 @@ Player.prototype.showStatus = function() {
     let pos = (i + 1) * 32;
     ctx.drawImage(Resources.get(SPRITES['heart']), 370 + pos, 0, 32, 48);
   }
-
+  ctx.font = '30px sans-serif';
+  ctx.fillStyle = "#000000";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
   ctx.fillText(`Level: ${player.level}`, 10, 35);
 };
 
@@ -207,6 +281,30 @@ const allEnemies = [
 ];
 
 const player = new Player();
+
+const checkExist = setInterval(() => {
+  if ($('#canvas').length) {
+    console.log('Found the canvas');
+    clearInterval(checkExist);
+    $('#canvas').on('click', (e) => {
+      let offset = $('#canvas').offset();
+      let left = offset.left;
+      let top = offset.top;
+      let x = e.pageX - left;
+      let y = e.pageY - top;
+
+      console.log(`Click X: ${x} Y: ${y}`);
+      gameWindow.buttonCoords.forEach((b) => {
+
+        console.log(`Btn left: ${b['left']} width: ${b['width']} top: ${b['top']} height: ${b['height']}`);
+        if (y > b['top'] && y < b['top'] + b['height'] &&
+            x > b['left'] && x < b['left'] + b['width']) {
+          b['func']();
+        }
+      });
+    });
+  }
+}, 100);
 
 document.addEventListener('keyup', (e) => {
   const allowedKeys = {
