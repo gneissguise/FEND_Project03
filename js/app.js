@@ -27,6 +27,13 @@ function resetAll(){
   });
 }
 
+function fullReset(){
+  resetAll();
+  player.lives = 3;
+  player.level = 1;
+  player.resetDifficulty();
+}
+
 function checkCollisions(player, enemies) {
   for (let enemy of enemies) {
     // Enemy collision box:    0, 112 | 100, 112 |   0, 140 | 100, 140
@@ -51,9 +58,6 @@ function checkCollisions(player, enemies) {
         // If player runs out of lives, game over.
         if (player.lives === 0) {
           gameWindow.render('lose');
-          player.lives = 3;
-          player.level = 1;
-          player.resetDifficulty();
           return;
         }
         gamePause = false;
@@ -222,7 +226,7 @@ Window.prototype.render = function(type) {
       this.message = "You Lose!";
       this.dialog();
       callback = () => {
-        resetAll();
+        fullReset();
         this.clearWindow();
       };
       this.drawButton({ title: "Play Again?",
@@ -237,9 +241,13 @@ Window.prototype.render = function(type) {
     case "start":
       this.message = "Frogger Clone";
       this.startMenu();
+      callback = () => {
+        fullReset();
+        this.clearWindow();
+      }
       this.drawButton({ title: "Start Game",
                         size: "large",
-                        row: 2 }, () => { this.clearWindow(); });
+                        row: 2 }, callback);
       this.drawButton({ title: "Help",
                         size: "large",
                         row: 3 }, () => { alert("Help, HEEELP!"); });
