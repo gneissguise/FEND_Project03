@@ -79,10 +79,12 @@ function Window() {
   this.height = 0;
   this.message = "";
   this.buttonCoords = [];
+  this.displayed = false;
 }
 
 Window.prototype.drawWindow = function() {
   gamePause = true;
+  this.displayed = true;
   ctx.fillStyle = "#000000";
   ctx.globalAlpha = 0.75;
   this.top = (canvas_height / 2) - (this.height / 2);
@@ -169,6 +171,7 @@ Window.prototype.alert = function() {
   ctx.fillText(this.message,
                this.left + (this.width / 2),
                this.top + (this.height / 2));
+  this.displayed = false;
 }
 
 Window.prototype.dialog = function() {
@@ -199,6 +202,18 @@ Window.prototype.startMenu = function() {
   ctx.fillText(this.message, this.left + (this.width / 2), this.top + 48);
 }
 
+Window.prototype.exitGame = function() {
+  this.buttonCoords = [];
+  render();
+  this.render('start');
+}
+
+Window.prototype.clearWindow = function() {
+  gamePause = false;
+  this.displayed = false;
+  this.buttonCoords = [];
+}
+
 Window.prototype.render = function(type) {
   let callback;
 
@@ -207,17 +222,13 @@ Window.prototype.render = function(type) {
       this.message = "You Lose!";
       this.dialog();
       callback = () => {
-        gamePause = false;
         resetAll();
-        this.buttonCoords = [];
+        this.clearWindow();
       };
       this.drawButton({ title: "Play Again?",
                         row: 3 }, callback);
       this.drawButton({ title: "Exit",
-                        row: 4}, () => { this.buttonCoords = [];
-                                         render();
-                                         this.render('start');
-                                          });
+                        row: 4}, () => { this.exitGame(); });
       break;
     case "pause":
       this.message = "Game Paused."
@@ -226,17 +237,23 @@ Window.prototype.render = function(type) {
     case "start":
       this.message = "Frogger Clone";
       this.startMenu();
-      callback = () => { gamePause = false;
-                         this.buttonCoords = []; };
       this.drawButton({ title: "Start Game",
                         size: "large",
-                        row: 2 }, callback);
+                        row: 2 }, () => { this.clearWindow(); });
       this.drawButton({ title: "Help",
                         size: "large",
                         row: 3 }, () => { alert("Help, HEEELP!"); });
       this.drawButton({ title: "Credits",
                         size: "large",
                         row: 4 }, () => { alert("ME!"); });
+      break;
+    case "exit":
+      this.message = "Do you want to exit?";
+      this.dialog();
+      this.drawButton({ title: "Yes",
+                        row: 3 }, () => { this.exitGame(); });
+      this.drawButton({ title: "No",
+                        row: 4 }, () => { this.clearWindow(); });
       break;
   }
 }
@@ -407,16 +424,26 @@ document.addEventListener('keyup', (e) => {
     40: 'down'
   };
 
-  // If player hits the P key, then pause.
-  if (e.keyCode === 80){
-    gamePause = !gamePause;
-    if (gamePause) {
-      gameWindow.render('pause');
+  // Don't allow user keys when in game menus are displayed
+  if (!gameWindow.displayed) {
+    // If player hits the P key, or enter, then pause.
+    if (e.keyCode === 80 || e.keyCode === 13){
+      gamePause = !gamePause;
+      if (gamePause) {
+        gameWindow.render('pause');
+      }
+    }
+
+    // If player hits ESC, then show exit dialog
+    if (e.keyCode === 27) {
+      gameWindow.render('exit');
     }
   }
-
   console.log("key code: " + e.keyCode);
 
+  // Only allow player to control character when not Paused
+  // (When menus are displayed, the game is paused by default and
+  // cannot be unpaused unless a menu item is clicked)
   if (!gamePause) {
     player.handleInput(allowedKeys[e.keyCode]);
   }
