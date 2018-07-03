@@ -96,31 +96,64 @@ Window.prototype.drawWindow = function() {
                  this.width, this.height);
 }
 
-Window.prototype.drawButton = function(title) {
-  let bWidth = 100;
-  let bHeight = 40;
-  let bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
-  let bTop = (this.top + this.height) - (bHeight + 3);
-  let grd = ctx.createLinearGradient(0, 0, 0, (bHeight * 2));
+Window.prototype.drawButton = function(params, callback) {
+/* params.title = "Window Title" // required
+  params.size = small/large
+  params.row = position
+  callback = function to call when clicked. //required
+*/
+  let bWidth, bHeight, bLeft, bTop, bBuffer, grd;
+  let bTitle = params.title;
+  let bRow = params.row || 5;
+  let bSize = params.size || "small";
+
+  switch(bSize){
+    case "large":
+      bBuffer = bRow === 5 ? 80 :
+                bRow === 4 ? 140 :
+                bRow === 3 ? 200 :
+                bRow === 2 ? 260 :
+                bRow === 1 ? 320 : 80;
+      bWidth = 300;
+      bHeight = 48;
+      bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
+      bTop = (this.top + this.height) - (bHeight + bBuffer);
+      grd = ctx.createLinearGradient(0, 0, 0, 115);
+      ctx.font = '36px sans-serif';
+      break;
+    case "small":
+    default:
+      bBuffer = bRow === 5 ? 5 :
+                bRow === 4 ? 45 :
+                bRow === 3 ? 90 :
+                bRow === 2 ? 135 :
+                bRow === 1 ? 180 : 5;
+      bWidth = 100;
+      bHeight = 36;
+      bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
+      bTop = (this.top + this.height) - (bHeight + bBuffer);
+      grd = ctx.createLinearGradient(0, 0, 0, 65);
+      ctx.font = '12px sans-serif';
+      break;
+  }
+
   this.buttonCoords.push(
-    {'top': bTop,
+    {'row': bRow,
+    'top': bTop,
     'left': bLeft,
     'width': bWidth,
     'height': bHeight,
-    'func': function() {
-      gamePause = false;
-      resetAll();
-    }}
+    'func': callback}
   );
+
   grd.addColorStop(0, '#9dbdf9');
   grd.addColorStop(1, '#2d63d7');
   ctx.fillStyle = grd;
   ctx.fillRect(bLeft, bTop, bWidth, bHeight);
-  ctx.font = '12px sans-serif';
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(title,
+  ctx.fillText(bTitle,
                bLeft + (bWidth / 2),
                bTop + (bHeight / 2));
 }
@@ -138,12 +171,72 @@ Window.prototype.alert = function() {
                this.top + (this.height / 2));
 }
 
+Window.prototype.dialog = function() {
+  this.width = 300;
+  this.height = 200;
+  this.drawWindow();
+  ctx.font = '30px sans-serif';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(this.message,
+               this.left + (this.width / 2),
+               this.top + 30);
+}
+
+Window.prototype.startMenu = function() {
+  this.width = 400;
+  this.height = 450;
+  this.drawWindow();
+  ctx.font = "48px sans-serif"
+  let grd = ctx.createLinearGradient(0, 0, 0, 87);
+  grd.addColorStop(0, '#b4e391');
+  grd.addColorStop(0.5, '#61c419');
+  grd.addColorStop(1, '#b4e391');
+  ctx.fillStyle = grd;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(this.message, this.left + (this.width / 2), this.top + 48);
+}
+
 Window.prototype.render = function(type) {
+  let callback;
+
   switch(type) {
     case "lose":
       this.message = "You Lose!";
+      this.dialog();
+      callback = () => {
+        gamePause = false;
+        resetAll();
+        this.buttonCoords = [];
+      };
+      this.drawButton({ title: "Play Again?",
+                        row: 3 }, callback);
+      this.drawButton({ title: "Exit",
+                        row: 4}, () => { this.buttonCoords = [];
+                                         render();
+                                         this.render('start');
+                                          });
+      break;
+    case "pause":
+      this.message = "Game Paused."
       this.alert();
-      this.drawButton("Play Again?");
+      break;
+    case "start":
+      this.message = "Frogger Clone";
+      this.startMenu();
+      callback = () => { gamePause = false;
+                         this.buttonCoords = []; };
+      this.drawButton({ title: "Start Game",
+                        size: "large",
+                        row: 2 }, callback);
+      this.drawButton({ title: "Help",
+                        size: "large",
+                        row: 3 }, () => { alert("Help, HEEELP!"); });
+      this.drawButton({ title: "Credits",
+                        size: "large",
+                        row: 4 }, () => { alert("ME!"); });
       break;
   }
 }
@@ -317,6 +410,9 @@ document.addEventListener('keyup', (e) => {
   // If player hits the P key, then pause.
   if (e.keyCode === 80){
     gamePause = !gamePause;
+    if (gamePause) {
+      gameWindow.render('pause');
+    }
   }
 
   console.log("key code: " + e.keyCode);

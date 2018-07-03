@@ -65,6 +65,18 @@ const Engine = ((global) => {
       win.requestAnimationFrame(main);
   }
 
+  function startMenu() {
+    //let now = Date.now(),
+    //dt = (now - lastTime) / 1000.0;
+
+    // Render stuff here
+    render();
+    gameWindow.render('start');
+
+    //lastTime = now;
+    //win.requestAnimationFrame(startMenu);
+  }
+
   /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
      * game loop.
@@ -72,6 +84,7 @@ const Engine = ((global) => {
   function init() {
     reset();
     lastTime = Date.now();
+    startMenu();
     main();
   }
 
@@ -195,5 +208,6 @@ const Engine = ((global) => {
   global.canvas = canvas;
   global.canvas_width = canvas.width;
   global.canvas_height = canvas.height;
-
+  global.main = main;
+  global.render = render;
 })(this);
