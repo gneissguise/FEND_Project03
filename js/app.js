@@ -34,6 +34,43 @@ function fullReset(){
   player.resetDifficulty();
 }
 
+function drawTriangle(points, fillStyle = "#FFFFFF") {
+  ctx.fillStyle = fillStyle
+  ctx.beginPath();
+  ctx.moveTo(points.x1, points.y1);
+  ctx.lineTo(points.x2, points.y2);
+  ctx.lineTo(points.x3, points.y3);
+  ctx.fill();
+}
+
+function fillParagraph(message, left, top, width) {
+  let words = message.split(' ');
+  let rowHeight = 18;
+  let row = '';
+
+  ctx.font = '16px sans-serif';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  // Hello how are you
+  for(let word of words) {
+    let testRow = row + word + ' ';
+    let rowWidth = ctx.measureText(testRow).width;
+
+    if (rowWidth > width) {
+      ctx.fillText(row, left, top);
+      row = word + ' ';
+      top += rowHeight;
+    }
+    else {
+      row = testRow;
+    }
+  }
+
+  ctx.fillText(row, left, top);
+  return top;
+}
+
 function checkCollisions(player, enemies) {
   for (let enemy of enemies) {
     // Enemy collision box:    0, 112 | 100, 112 |   0, 140 | 100, 140
@@ -49,19 +86,20 @@ function checkCollisions(player, enemies) {
       //	    particle_explosion.create(ctx, player.x / 2, player.y / 2, 128);
       //	    particle_explosion.update();
       gamePause = true;
-      $("canvas").fadeOut("slow");
+      $("canvas").fadeOut("fast");
       resetAll();
-      $("canvas").fadeIn("slow");
+      $("canvas").fadeIn("fast");
       setTimeout(() => {
         player.lives--;
 
         // If player runs out of lives, game over.
         if (player.lives === 0) {
+          render();
           gameWindow.render('lose');
           return;
         }
         gamePause = false;
-      }, 1000);
+      }, 500);
 
       return;
     }
@@ -124,7 +162,7 @@ Window.prototype.drawButton = function(params, callback) {
       bHeight = 48;
       bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
       bTop = (this.top + this.height) - (bHeight + bBuffer);
-      grd = ctx.createLinearGradient(0, 0, 0, 115);
+      grd = ctx.createLinearGradient(0, bTop, 0, bTop + bHeight);
       ctx.font = '36px sans-serif';
       break;
     case "small":
@@ -138,8 +176,8 @@ Window.prototype.drawButton = function(params, callback) {
       bHeight = 36;
       bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
       bTop = (this.top + this.height) - (bHeight + bBuffer);
-      grd = ctx.createLinearGradient(0, 0, 0, 65);
-      ctx.font = '12px sans-serif';
+      grd = ctx.createLinearGradient(0, bTop, 0, bTop + bHeight);
+      ctx.font = '16px sans-serif';
       break;
   }
 
@@ -191,12 +229,48 @@ Window.prototype.dialog = function() {
                this.top + 30);
 }
 
+Window.prototype.information = function(inf) {
+  // inf.title
+  // inf.message
+  // inf.back = callback to go back to calling screen
+
+  this.width = 400;
+  this.height = 450;
+  this.drawWindow();
+  ctx.font = '30px sans-serif';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(inf.title,
+               this.left + (this.width / 2),
+               this.top + 30);
+  fillParagraph(inf.message, this.left + 30, this.top + 75, this.width - 30);
+  drawTriangle({
+    x1: this.left + 15, y1: this.top + this.height - 40,
+    x2: this.left + 31, y2: this.top + this.height - 32,
+    x3: this.left + 31, y3: this.top + this.height - 48
+  });
+  ctx.font = '16px sans-serif';
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText("Back", this.left + 43, this.top + this.height - 34);
+  this.buttonCoords = [];
+  this.buttonCoords.push(
+    {'top': this.top + this.height - 48,
+    'left': this.left + 15,
+    'width': 64,
+    'height': 16,
+    'func': inf.back}
+  );
+}
+
 Window.prototype.startMenu = function() {
   this.width = 400;
   this.height = 450;
   this.drawWindow();
-  ctx.font = "48px sans-serif"
-  let grd = ctx.createLinearGradient(0, 0, 0, 87);
+  ctx.font = "700 48px sans-serif"
+  let grd = ctx.createLinearGradient(0, this.top + 24, 0, this.top + 72);
   grd.addColorStop(0, '#b4e391');
   grd.addColorStop(0.5, '#61c419');
   grd.addColorStop(1, '#b4e391');
@@ -239,7 +313,7 @@ Window.prototype.render = function(type) {
       this.alert();
       break;
     case "start":
-      this.message = "Frogger Clone";
+      this.message = "BUGGER";
       this.startMenu();
       callback = () => {
         fullReset();
@@ -248,12 +322,35 @@ Window.prototype.render = function(type) {
       this.drawButton({ title: "Start Game",
                         size: "large",
                         row: 2 }, callback);
+      callback = () => {
+        render();
+        let msg = `This is a clone of the classic arcade game, Frogger!
+        To start a new game, you may click the "Start Game" button from the
+        main menu.  This will take you to the character selection screen where
+        you may choose the character that you would like to play as.
+        Use the left and right arrows to scroll through the list of characters,
+        then click "OK" to start the game.  To play, simply move your character
+        around using the arrow keys on your keyboard.  The goal is to guide your
+        character to the water without hitting a bug!`;
+        this.information({ title: "Help",
+                           message: msg,
+                           back: () => { this.exitGame(); }});
+      };
       this.drawButton({ title: "Help",
                         size: "large",
-                        row: 3 }, () => { alert("Help, HEEELP!"); });
+                        row: 3 }, callback);
+      callback = () => {
+        render();
+        let msg = `Game assets and starting game engine template provided by Udacity.
+        Game implementation, windowing system, and enhancements to rendering system by Justin Frost.
+        A little bit of jQuery was sprinkled in too for good measure!`;
+        this.information({ title: "Credits",
+                           message: msg,
+                           back: () => { this.exitGame(); }});
+      };
       this.drawButton({ title: "Credits",
                         size: "large",
-                        row: 4 }, () => { alert("ME!"); });
+                        row: 4 }, callback);
       break;
     case "exit":
       this.message = "Do you want to exit?";
