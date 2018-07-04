@@ -1,3 +1,4 @@
+const VERSION = "0.50";
 // These global constants will serve as the bounds for
 // our player character.
 
@@ -18,8 +19,10 @@ const SPRITES = {
   'heart': 'images/Heart.png'
 };
 
+// This value controls the animation and player movement
 let gamePause = false;
 
+// Reset player and enemies back to starting positions
 function resetAll(){
   player.reset();
   allEnemies.forEach((enemy) => {
@@ -27,6 +30,7 @@ function resetAll(){
   });
 }
 
+// Reset player state and enemies back to starting position
 function fullReset(){
   resetAll();
   player.lives = 3;
@@ -34,6 +38,8 @@ function fullReset(){
   player.resetDifficulty();
 }
 
+// Draws a triangle based on points passed to the function as:
+// { x1, y1, x2, y2, x3, y3 }
 function drawTriangle(points, fillStyle = "#FFFFFF") {
   ctx.fillStyle = fillStyle
   ctx.beginPath();
@@ -43,6 +49,7 @@ function drawTriangle(points, fillStyle = "#FFFFFF") {
   ctx.fill();
 }
 
+// Allows word wrapped paragraphs to render on screen.
 function fillParagraph(message, left, top, width) {
   let words = message.split(' ');
   let rowHeight = 18;
@@ -52,7 +59,7 @@ function fillParagraph(message, left, top, width) {
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-  // Hello how are you
+
   for(let word of words) {
     let testRow = row + word + ' ';
     let rowWidth = ctx.measureText(testRow).width;
@@ -71,6 +78,7 @@ function fillParagraph(message, left, top, width) {
   return top;
 }
 
+// Does the collision detection between enemies and the player
 function checkCollisions(player, enemies) {
   for (let enemy of enemies) {
     // Enemy collision box:    0, 112 | 100, 112 |   0, 140 | 100, 140
@@ -116,6 +124,7 @@ function checkCollisions(player, enemies) {
   }
 }
 
+// Class for a basic windowing system
 function Window() {
   this.width = 0;
   this.height = 0;
@@ -124,6 +133,7 @@ function Window() {
   this.displayed = false;
 }
 
+// Draws the window to the screen
 Window.prototype.drawWindow = function() {
   gamePause = true;
   this.displayed = true;
@@ -140,6 +150,7 @@ Window.prototype.drawWindow = function() {
                  this.width, this.height);
 }
 
+// Draws a button to the screen with options passed into params
 Window.prototype.drawButton = function(params, callback) {
 /* params.title = "Window Title" // required
   params.size = small/large
@@ -202,6 +213,7 @@ Window.prototype.drawButton = function(params, callback) {
                bTop + (bHeight / 2));
 }
 
+// creates an window that displays an alert to the user
 Window.prototype.alert = function() {
   this.width = 300;
   this.height = 200;
@@ -216,6 +228,7 @@ Window.prototype.alert = function() {
   this.displayed = false;
 }
 
+// Creates a window with a dialog message, allowing for yes, no answer
 Window.prototype.dialog = function() {
   this.width = 300;
   this.height = 200;
@@ -229,6 +242,7 @@ Window.prototype.dialog = function() {
                this.top + 30);
 }
 
+// General information display window, used for help and credits
 Window.prototype.information = function(inf) {
   // inf.title
   // inf.message
@@ -265,6 +279,7 @@ Window.prototype.information = function(inf) {
   );
 }
 
+// Initial start menu
 Window.prototype.startMenu = function() {
   this.width = 400;
   this.height = 450;
@@ -278,20 +293,29 @@ Window.prototype.startMenu = function() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(this.message, this.left + (this.width / 2), this.top + 48);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "12px sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(`Version: ${VERSION}`, this.left + this.width - 15, this.top + this.height - 15);
 }
 
+// Back to start menu
 Window.prototype.exitGame = function() {
   this.buttonCoords = [];
   render();
   this.render('start');
 }
 
+// Clears the window, goes back to game
 Window.prototype.clearWindow = function() {
   gamePause = false;
   this.displayed = false;
   this.buttonCoords = [];
 }
 
+// special window implementations:
+// lose, pause, start, help, credits, exit
 Window.prototype.render = function(type) {
   let callback;
 
@@ -363,6 +387,7 @@ Window.prototype.render = function(type) {
   }
 }
 
+// Constructs a new Window object
 const gameWindow = new Window();
 
 // Enemies our player must avoid
@@ -398,22 +423,25 @@ Enemy.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+// Reset enemy position back to start
 Enemy.prototype.reset = function() {
   this.x = this.startX;
   this.y = this.startY;
 }
 
+// Increases enemy difficulty
 Enemy.prototype.setDifficulty = function() {
   this.coefficient = (Math.random() + player.difficulty) * 5;
 }
 
+// Player class
 function Player() {
   this.sprite = SPRITES['player'];
   this.startX = CHAR_STARTING_X;
   this.x = this.startX;
   this.startY = CHAR_STARTING_Y;
   this.y = this.startY;
-  this.lives = 1;
+  this.lives = 3;
   this.level = 1;
   this.difficulty = 0;
   this.collision = [
@@ -424,15 +452,18 @@ function Player() {
   ];
 };
 
+// Check for collisions
 Player.prototype.update = function() {
   checkCollisions(player, allEnemies);
 };
 
+// update player movement and stats at top of screen
 Player.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
   this.showStatus();
 };
 
+// Current level and lives
 Player.prototype.showStatus = function() {
   for (let i = 0; i < this.lives; i++){
     let pos = (i + 1) * 32;
@@ -445,11 +476,13 @@ Player.prototype.showStatus = function() {
   ctx.fillText(`Level: ${player.level}`, 10, 35);
 };
 
+// resets player back to start
 Player.prototype.reset = function() {
   this.x = this.startX;
   this.y = this.startY;
 };
 
+// controls for player movement
 Player.prototype.handleInput = function(keyInp) {
   switch (keyInp) {
     case 'left':
@@ -475,6 +508,7 @@ Player.prototype.handleInput = function(keyInp) {
   };
 };
 
+// Sets difficulty
 Player.prototype.increaseDifficulty = function(){
   this.difficulty += 10;
   allEnemies.forEach((enemy) => {
@@ -482,6 +516,7 @@ Player.prototype.increaseDifficulty = function(){
   });
 }
 
+// resets difficulty back to 0
 Player.prototype.resetDifficulty = function() {
   this.difficulty = 0;
   allEnemies.forEach((enemy) => {
@@ -489,14 +524,19 @@ Player.prototype.resetDifficulty = function() {
   });
 }
 
+// Instantiate enemy objects
 const allEnemies = [
   new Enemy(-50, 50),
   new Enemy(-202, 135),
   new Enemy(-101, 215)
 ];
 
+// instantiate player object
 const player = new Player();
 
+// Wait until canvas is rendered to screen, then start
+// listening for mouse clicks.  If a button is clicked,
+// launch the button callback.
 const checkExist = setInterval(() => {
   if ($('#canvas').length) {
     console.log('Found the canvas');
@@ -521,6 +561,9 @@ const checkExist = setInterval(() => {
   }
 }, 100);
 
+// Register keyboard lisener and map arrow keys to movement commands.
+// Block movement when windows are displayed.  If P or ENTER are hit on the keyboard,
+// then pause the gameplay.  If ESC is hit on the keyboard, show the exit dialog.
 document.addEventListener('keyup', (e) => {
   const allowedKeys = {
     37: 'left',
