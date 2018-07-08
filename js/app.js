@@ -571,9 +571,11 @@ Window.prototype.render = function(type) {
                         row: 3 }, callback);
       callback = () => {
         render();
-        let msg = [{ text: "Game assets and starting game engine template provided by Udacity.", lineAfter: 2 },
-        { text: "Game implementation, windowing system, and enhancements to rendering system by Justin Frost.", lineAfter: 2 },
-        { text: "A little bit of jQuery was sprinkled in too for good measure!", lineAfter: 0 }];
+        let msg = [{ text: "* Game assets and starting game engine template provided by Udacity.", lineAfter: 2 },
+        { text: "* Game implementation, animation, complete windowing system, and enhancements to \
+        game engine/rendering system by Justin Frost.", lineAfter: 2 },
+        { text: "* Title font provided by Google Fonts", lineAfter: 2 },
+        { text: "* And a little bit of jQuery was sprinkled in for good measure!", lineAfter: 0 }];
         this.information({ title: "Credits",
                            message: msg,
                            back: () => { this.exitGame(); }});
