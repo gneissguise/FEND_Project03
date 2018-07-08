@@ -1,5 +1,5 @@
 // Game version
-const VERSION = "0.55";
+const VERSION = "0.57";
 
 // These global constants will serve as the bounds for
 // our player character.
@@ -74,6 +74,20 @@ function minPoint(points) {
 // Returns max point value in array of points
 function maxPoint(points) {
   return Math.max.apply(null, points);
+}
+
+// Copies a section of the canvas
+// NOTE: This will fail if this app is not run from a webserver
+// due to CORS restritions
+function copyImage(top, left, width, height) {
+  return ctx.getImageData(top, left, width, height);
+}
+
+// Pastes the copied section of canvas
+// NOTE: This will fail if this app is not run from a webserver
+// due to CORS restritions
+function pasteImage(img, x, y) {
+  ctx.putImageData(img, x, y);
 }
 
 // Allows word wrapped paragraphs to render on screen.
@@ -343,65 +357,12 @@ Window.prototype.selector = (function(selection) {
   console.log(`selection type: ${typeof selection}`);
   let index = selection.findIndex((a) => a.selected);
 
-/*
-  // Closure to display character
-  let display = function display() {
-    return selection[index].url;
-  }
-*/
-
-/*
-  // Closure to increase index
-  // of selected character
-  let increaseIndex = function() {
-    // reset selector
-    selection.map((a) => a.selected = false);
-
-    // If index is currently max, reset to 0
-    // otherwise increase index
-    if (index === selection.length - 1) {
-      index = 0;
-    }
-    else {
-      index++;
-    }
-    selection[index].selected = true;
-
-    return index;
-  };
-*/
-
-/*
-  // Closure to decrease index
-  // of selected character
-  let decreaseIndex = function() {
-    // reset selector
-    selection.map((a) => a.selected = false);
-
-    // If index is currently 0, set to max
-    // otherwise decrease index
-    if (index === 0) {
-      index = selection.length - 1;
-    }
-    else {
-      index--;
-    }
-    selection[index].selected = true;
-
-    return index;
-  };
-*/
-/*  return {
-    display: display,
-    increase: increaseIndex,
-    decrease: decreaseIndex
-  };
-*/
   return {
     display: function() {
       console.log(`display - index: ${index}`);
       return selection[index].url;
     },
+
     increase: function() {
       // reset selector
       selection.map((a) => a.selected = false);
@@ -418,6 +379,7 @@ Window.prototype.selector = (function(selection) {
 
       console.log(`increase - index: ${index}`);
     },
+
     decrease: function() {
       // reset selector
       selection.map((a) => a.selected = false);
@@ -439,8 +401,6 @@ Window.prototype.selector = (function(selection) {
 
 // Draws the selected character to the window
 Window.prototype.drawCharacter = function(url, x, y) {
-  //let url = this.selector(characterObj).display.url;
-
   ctx.drawImage(Resources.get(url), x, y);
 };
 
@@ -472,9 +432,15 @@ Window.prototype.characterSelect = function(callback) {
   ctx.strokeStyle = "#FFFFFF";
   ctx.lineWidth = 3;
 
+  // draw selection box
   ctx.strokeRect(this.left + (this.width / 2) - 75,
                  this.top + (this.height / 2) - 100,
                  150, 200);
+
+  // Take a screenshot of the selection box area
+  let img = copyImage(this.left + (this.width / 2) - 75,
+                      this.top + (this.height / 2) - 100,
+                      150, 200);
 
   // Draw currently selected character
   this.drawCharacter(display(),
@@ -488,14 +454,10 @@ Window.prototype.characterSelect = function(callback) {
     x3: this.left + (this.width / 2) - 86, y3: this.top + (this.height / 2) - 16
   }, function() {
     decrease();
-    render();
-    _this.characterSelect(callback);
-/*
+    pasteImage(img, _this.left + (_this.width / 2) - 75, _this.top + (_this.height / 2) - 100)
     _this.drawCharacter(display(),
                        _this.left + (_this.width / 2) - 50,
                        _this.top + (_this.height / 2) - 100);
-*/
-
   });
 
   // Draw right arrow
@@ -505,13 +467,10 @@ Window.prototype.characterSelect = function(callback) {
     x3: this.left + (this.width / 2) + 86, y3: this.top + (this.height / 2) - 16
   }, function() {
     increase();
-    render();
-    _this.characterSelect(callback);
-/*
+    pasteImage(img, _this.left + (_this.width / 2) - 75, _this.top + (_this.height / 2) - 100)
     _this.drawCharacter(display(),
                        _this.left + (_this.width / 2) - 50,
                        _this.top + (_this.height / 2) - 100);
-*/
   });
 
   // Start button - callback action sets character and starts game
