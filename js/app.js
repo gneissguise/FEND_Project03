@@ -1,5 +1,5 @@
 // Game version
-const VERSION = "0.65";
+const VERSION = "0.67";
 
 // These global constants will serve as the bounds for
 // our player character.
@@ -619,7 +619,7 @@ Enemy.prototype.update = function(dt) {
     this.x += (MOVE_FACTOR + this.coefficient) * dt;
     this.y = this.y + Math.sin(2 * Math.PI * (this.x / 50)) * 1.333;
   } else {
-    this.x = this.startX;
+    this.x = Math.floor(Math.random() * 300) - 380;
     this.y = this.startY;
   }
 };
@@ -631,7 +631,7 @@ Enemy.prototype.render = function() {
 
 // Reset enemy position back to start
 Enemy.prototype.reset = function() {
-  this.x = this.startX;
+  this.x = Math.floor(Math.random() * 300) - 380;
   this.y = this.startY;
 };
 
@@ -732,9 +732,9 @@ Player.prototype.resetDifficulty = function() {
 
 // Instantiate enemy objects
 const allEnemies = [
-  new Enemy(-50, 50),
-  new Enemy(-202, 135),
-  new Enemy(-101, 215)
+  new Enemy(Math.floor(Math.random() * 300) - 380, 50),
+  new Enemy(Math.floor(Math.random() * 300) - 380, 135),
+  new Enemy(Math.floor(Math.random() * 300) - 380, 215)
 ];
 
 // instantiate player object
