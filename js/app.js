@@ -1,5 +1,5 @@
 // Game version
-const VERSION = "0.63";
+const VERSION = "0.65";
 
 // These global constants will serve as the bounds for
 // our player character.
@@ -197,12 +197,14 @@ Window.prototype.drawWindow = function() {
 Window.prototype.drawButton = function(params, callback) {
 /* params.title = "Window Title" // required
   params.size = small/large
-  params.row = position
+  params.row = row position
+  params.col = column position 1 or 2 (only for small)
   callback = function to call when clicked. //required
 */
   let bWidth, bHeight, bLeft, bTop, bBuffer, grd;
   let bTitle = params.title;
   let bRow = params.row || 5;
+  let bCol = params.col || 0;
   let bSize = params.size || "small";
 
   switch(bSize){
@@ -228,7 +230,15 @@ Window.prototype.drawButton = function(params, callback) {
                 bRow === 1 ? 180 : 5;
       bWidth = 100;
       bHeight = 36;
-      bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
+      if (bCol === 1) {
+        bLeft = ((this.left + (this.width / 2)) - (bWidth / 2)) - 55;
+      }
+      else if (bCol === 2) {
+        bLeft = ((this.left + (this.width / 2)) - (bWidth / 2)) + 55;
+      }
+      else {
+        bLeft = (this.left + (this.width / 2)) - (bWidth / 2);
+      }
       bTop = (this.top + this.height) - (bHeight + bBuffer);
       grd = ctx.createLinearGradient(0, bTop, 0, bTop + bHeight);
       ctx.font = '16px sans-serif';
@@ -574,8 +584,10 @@ Window.prototype.render = function(type) {
       this.message = "Do you want to exit?";
       this.dialog();
       this.drawButton({ title: "Yes",
-                        row: 3 }, () => { this.exitGame(); });
+                        col: 1,
+                        row: 4 }, () => { this.exitGame(); });
       this.drawButton({ title: "No",
+                        col: 2,
                         row: 4 }, () => { this.clearWindow(); });
       break;
   }
