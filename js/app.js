@@ -1,5 +1,5 @@
 // Game version
-const VERSION = "0.57";
+const VERSION = "0.6";
 
 // These global constants will serve as the bounds for
 // our player character.
@@ -102,16 +102,18 @@ function fillParagraph(message, left, top, width) {
   ctx.textBaseline = "alphabetic";
 
   for(let word of words) {
-    let testRow = row + word + ' ';
-    let rowWidth = ctx.measureText(testRow).width;
+    if (!isNaN(word.charCodeAt(0))) {
+      let testRow = row + word + ' ';
+      let rowWidth = ctx.measureText(testRow).width;
 
-    if (rowWidth > width) {
-      ctx.fillText(row, left, top);
-      row = word + ' ';
-      top += rowHeight;
-    }
-    else {
-      row = testRow;
+      if (rowWidth > width) {
+        ctx.fillText(row, left, top);
+        row = word + ' ';
+        top += rowHeight;
+      }
+      else {
+        row = testRow;
+      }
     }
   }
 
@@ -288,6 +290,7 @@ Window.prototype.information = function(inf) {
   // inf.title
   // inf.message
   // inf.back = callback to go back to calling screen
+  let message = inf.message;
 
   this.width = 400;
   this.height = 450;
@@ -301,7 +304,13 @@ Window.prototype.information = function(inf) {
                this.top + 30);
 
   if(inf.message) {
-    fillParagraph(inf.message, this.left + 30, this.top + 75, this.width - 30);
+    let row = this.top + 75;
+    for (let m of message) {
+        row = fillParagraph(m.text, this.left + 30, row, this.width - 30);
+        if (m.lineAfter > 0) {
+          row += m.lineAfter * 18;
+        }
+    }
   }
 
   drawTriangle({
@@ -533,14 +542,14 @@ Window.prototype.render = function(type) {
                         row: 2 }, callback);
       callback = () => {
         render();
-        let msg = `This is a clone of the classic arcade game, Frogger!
-        To start a new game, you may click the "Start Game" button from the
-        main menu.  This will take you to the character selection screen where
-        you may choose the character that you would like to play as.
-        Use the left and right arrows to scroll through the list of characters,
-        then click "OK" to start the game.  To play, simply move your character
-        around using the arrow keys on your keyboard.  The goal is to guide your
-        character to the water without hitting a bug!`;
+        let msg = [{ text: "This is a clone of the classic arcade game, Frogger!", lineAfter: 2 },
+        { text: "To start a new game: Click 'Start Game', choose a character, then click 'Start'", lineAfter: 2 },
+        { text: "Goal: to get your character across the road to the water without being hit by bugs. \
+        Use the arrow keys on your keyboard to move your character. When you reach the water \
+        the the level and the game difficulty will increase. ", lineAfter: 2},
+        { text: "You lose a life when you're hit by a bug. Lose 3 lives and you lose.", lineAfter: 2},
+        { text: "Press 'P' or ENTER to pause; ESC to exit to main menu", lineAfter: 0}];
+
         this.information({ title: "Help",
                            message: msg,
                            back: () => { this.exitGame(); }});
@@ -550,9 +559,9 @@ Window.prototype.render = function(type) {
                         row: 3 }, callback);
       callback = () => {
         render();
-        let msg = `Game assets and starting game engine template provided by Udacity.
-        Game implementation, windowing system, and enhancements to rendering system by Justin Frost.
-        A little bit of jQuery was sprinkled in too for good measure!`;
+        let msg = [{ text: "Game assets and starting game engine template provided by Udacity.", lineAfter: 2 },
+        { text: "Game implementation, windowing system, and enhancements to rendering system by Justin Frost.", lineAfter: 2 },
+        { text: "A little bit of jQuery was sprinkled in too for good measure!", lineAfter: 0 }];
         this.information({ title: "Credits",
                            message: msg,
                            back: () => { this.exitGame(); }});
