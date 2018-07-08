@@ -1,7 +1,8 @@
-const VERSION = "0.50";
+// Game version
+const VERSION = "0.55";
+
 // These global constants will serve as the bounds for
 // our player character.
-
 const CHAR_MIN_X = 0;
 const CHAR_MAX_X = 404;
 const CHAR_MIN_Y = 0;
@@ -16,11 +17,27 @@ const SPRITES = {
   'grass': 'images/grass-block.png',
   'enemy': 'images/enemy-bug.png',
   'player': 'images/char-boy.png',
-  'heart': 'images/Heart.png'
+  'heart': 'images/Heart.png',
+  'characters': ['images/char-boy.png',
+                 'images/char-cat-girl.png',
+                 'images/char-horn-girl.png',
+                 'images/char-pink-girl.png',
+                 'images/char-princess-girl.png']
 };
 
 // This value controls the animation and player movement
 let gamePause = false;
+
+// This value contains the character object for the character selector
+// based on the array assigned to SPRITES['characters']
+let characterObj = function pushChars(characters) {
+  let arr = [];
+
+  characters.forEach((c) => arr.push({ url: c, selected: false }));
+  arr[0].selected = true;
+
+  return arr;
+}(SPRITES['characters']);
 
 // Reset player and enemies back to starting positions
 function resetAll(){
@@ -47,6 +64,16 @@ function drawTriangle(points, fillStyle = "#FFFFFF") {
   ctx.lineTo(points.x2, points.y2);
   ctx.lineTo(points.x3, points.y3);
   ctx.fill();
+}
+
+// Returns minimum point value in array of points
+function minPoint(points) {
+  return Math.min.apply(null, points);
+}
+
+// Returns max point value in array of points
+function maxPoint(points) {
+  return Math.max.apply(null, points);
 }
 
 // Allows word wrapped paragraphs to render on screen.
@@ -258,7 +285,11 @@ Window.prototype.information = function(inf) {
   ctx.fillText(inf.title,
                this.left + (this.width / 2),
                this.top + 30);
-  fillParagraph(inf.message, this.left + 30, this.top + 75, this.width - 30);
+
+  if(inf.message) {
+    fillParagraph(inf.message, this.left + 30, this.top + 75, this.width - 30);
+  }
+
   drawTriangle({
     x1: this.left + 15, y1: this.top + this.height - 40,
     x2: this.left + 31, y2: this.top + this.height - 32,
@@ -300,19 +331,212 @@ Window.prototype.startMenu = function() {
   ctx.fillText(`Version: ${VERSION}`, this.left + this.width - 15, this.top + this.height - 15);
 }
 
+// Character selector: passes in an array of objects
+// [{ url: 'imgurl', selected: true/false }, ...]
+// returns an object of functions:
+// { display: returns selected object url,
+//   increase: moves selected object to next index,
+//   decrease: moves selected object to prior object }
+Window.prototype.selector = (function(selection) {
+  // selection.obj.url = 'image url'
+  // selection.obj.selected = true or false
+  console.log(`selection type: ${typeof selection}`);
+  let index = selection.findIndex((a) => a.selected);
+
+/*
+  // Closure to display character
+  let display = function display() {
+    return selection[index].url;
+  }
+*/
+
+/*
+  // Closure to increase index
+  // of selected character
+  let increaseIndex = function() {
+    // reset selector
+    selection.map((a) => a.selected = false);
+
+    // If index is currently max, reset to 0
+    // otherwise increase index
+    if (index === selection.length - 1) {
+      index = 0;
+    }
+    else {
+      index++;
+    }
+    selection[index].selected = true;
+
+    return index;
+  };
+*/
+
+/*
+  // Closure to decrease index
+  // of selected character
+  let decreaseIndex = function() {
+    // reset selector
+    selection.map((a) => a.selected = false);
+
+    // If index is currently 0, set to max
+    // otherwise decrease index
+    if (index === 0) {
+      index = selection.length - 1;
+    }
+    else {
+      index--;
+    }
+    selection[index].selected = true;
+
+    return index;
+  };
+*/
+/*  return {
+    display: display,
+    increase: increaseIndex,
+    decrease: decreaseIndex
+  };
+*/
+  return {
+    display: function() {
+      console.log(`display - index: ${index}`);
+      return selection[index].url;
+    },
+    increase: function() {
+      // reset selector
+      selection.map((a) => a.selected = false);
+
+      // If index is currently max, reset to 0
+      // otherwise increase index
+      if (index === selection.length - 1) {
+        index = 0;
+      }
+      else {
+        index++;
+      }
+      selection[index].selected = true;
+
+      console.log(`increase - index: ${index}`);
+    },
+    decrease: function() {
+      // reset selector
+      selection.map((a) => a.selected = false);
+
+      // If index is currently 0, set to max
+      // otherwise decrease index
+      if (index === 0) {
+        index = selection.length - 1;
+      }
+      else {
+        index--;
+      }
+      selection[index].selected = true;
+
+      console.log(`decrease - index: ${index}`);
+    }
+  };
+})(characterObj);
+
+// Draws the selected character to the window
+Window.prototype.drawCharacter = function(url, x, y) {
+  //let url = this.selector(characterObj).display.url;
+
+  ctx.drawImage(Resources.get(url), x, y);
+};
+
+// Draws clickable arrow
+Window.prototype.drawArrow = function(triangle, callback) {
+  let xPoints = [triangle.x1, triangle.x2, triangle.x3];
+  let yPoints = [triangle.y1, triangle.y2, triangle.y3];
+  drawTriangle(triangle);
+  console.log(`xpoints: ${xPoints}, min: ${minPoint(xPoints)}, max: ${maxPoint(xPoints)}`);
+  console.log(`ypoints: ${yPoints}, min: ${minPoint(yPoints)}, max: ${maxPoint(yPoints)}`);
+
+  this.buttonCoords.push({
+    'row': 0,
+    'top': minPoint(yPoints),
+    'left': minPoint(xPoints),
+    'width': maxPoint(xPoints) - minPoint(xPoints),
+    'height': maxPoint(yPoints) - minPoint(yPoints),
+    'func': callback
+  });
+};
+
+Window.prototype.characterSelect = function(callback) {
+  let display = this.selector.display;
+  let decrease = this.selector.decrease;
+  let increase = this.selector.increase;
+  let _this = this;
+
+  this.information({ title: "Choose your character:", back: callback });
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.lineWidth = 3;
+
+  ctx.strokeRect(this.left + (this.width / 2) - 75,
+                 this.top + (this.height / 2) - 100,
+                 150, 200);
+
+  // Draw currently selected character
+  this.drawCharacter(display(),
+                     this.left + (this.width / 2) - 50,
+                     this.top + (this.height / 2) - 100);
+
+  // Draw left arrow
+  this.drawArrow({
+    x1: this.left + (this.width / 2) - 102, y1: this.top + (this.height / 2) ,
+    x2: this.left + (this.width / 2) - 86, y2: this.top + (this.height / 2) + 16,
+    x3: this.left + (this.width / 2) - 86, y3: this.top + (this.height / 2) - 16
+  }, function() {
+    decrease();
+    render();
+    _this.characterSelect(callback);
+/*
+    _this.drawCharacter(display(),
+                       _this.left + (_this.width / 2) - 50,
+                       _this.top + (_this.height / 2) - 100);
+*/
+
+  });
+
+  // Draw right arrow
+  this.drawArrow({
+    x1: this.left + (this.width / 2) + 102, y1: this.top + (this.height / 2) ,
+    x2: this.left + (this.width / 2) + 86, y2: this.top + (this.height / 2) + 16,
+    x3: this.left + (this.width / 2) + 86, y3: this.top + (this.height / 2) - 16
+  }, function() {
+    increase();
+    render();
+    _this.characterSelect(callback);
+/*
+    _this.drawCharacter(display(),
+                       _this.left + (_this.width / 2) - 50,
+                       _this.top + (_this.height / 2) - 100);
+*/
+  });
+
+  // Start button - callback action sets character and starts game
+  this.drawButton({ title: "Start",
+                    row: 4 },
+                    () => {
+                      player.sprite = display();
+                      _this.clearWindow();
+                      render();
+                    });
+};
+
 // Back to start menu
 Window.prototype.exitGame = function() {
   this.buttonCoords = [];
   render();
   this.render('start');
-}
+};
 
 // Clears the window, goes back to game
 Window.prototype.clearWindow = function() {
   gamePause = false;
   this.displayed = false;
   this.buttonCoords = [];
-}
+};
 
 // special window implementations:
 // lose, pause, start, help, credits, exit
@@ -340,8 +564,10 @@ Window.prototype.render = function(type) {
       this.message = "BUGGER";
       this.startMenu();
       callback = () => {
+        render();
         fullReset();
-        this.clearWindow();
+        this.characterSelect(() => { this.exitGame(); })
+        //this.clearWindow();
       }
       this.drawButton({ title: "Start Game",
                         size: "large",
@@ -385,7 +611,7 @@ Window.prototype.render = function(type) {
                         row: 4 }, () => { this.clearWindow(); });
       break;
   }
-}
+};
 
 // Constructs a new Window object
 const gameWindow = new Window();
@@ -427,12 +653,12 @@ Enemy.prototype.render = function() {
 Enemy.prototype.reset = function() {
   this.x = this.startX;
   this.y = this.startY;
-}
+};
 
 // Increases enemy difficulty
 Enemy.prototype.setDifficulty = function() {
   this.coefficient = (Math.random() + player.difficulty) * 5;
-}
+};
 
 // Player class
 function Player() {
@@ -514,7 +740,7 @@ Player.prototype.increaseDifficulty = function(){
   allEnemies.forEach((enemy) => {
     enemy.setDifficulty();
   });
-}
+};
 
 // resets difficulty back to 0
 Player.prototype.resetDifficulty = function() {
@@ -522,7 +748,7 @@ Player.prototype.resetDifficulty = function() {
   allEnemies.forEach((enemy) => {
     enemy.setDifficulty();
   });
-}
+};
 
 // Instantiate enemy objects
 const allEnemies = [

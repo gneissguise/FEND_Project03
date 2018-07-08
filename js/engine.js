@@ -193,7 +193,8 @@ const Engine = ((global) => {
                   SPRITES['grass'],
                   SPRITES['enemy'],
                   SPRITES['player'],
-                  SPRITES['heart']]);
+                  SPRITES['heart']]
+                  .concat(SPRITES['characters']));
 
   Resources.onReady(init);
 
