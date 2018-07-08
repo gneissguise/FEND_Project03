@@ -1,5 +1,5 @@
 // Game version
-const VERSION = "0.6";
+const VERSION = "0.63";
 
 // These global constants will serve as the bounds for
 // our player character.
@@ -735,6 +735,8 @@ const checkExist = setInterval(() => {
   if ($('#canvas').length) {
     console.log('Found the canvas');
     clearInterval(checkExist);
+
+    // Register an onclick event for the canvas
     $('#canvas').on('click', (e) => {
       let offset = $('#canvas').offset();
       let left = offset.left;
@@ -742,13 +744,29 @@ const checkExist = setInterval(() => {
       let x = e.pageX - left;
       let y = e.pageY - top;
 
-      console.log(`Click X: ${x} Y: ${y}`);
       gameWindow.buttonCoords.forEach((b) => {
-
-        console.log(`Btn left: ${b['left']} width: ${b['width']} top: ${b['top']} height: ${b['height']}`);
         if (y > b['top'] && y < b['top'] + b['height'] &&
             x > b['left'] && x < b['left'] + b['width']) {
+          // Run button callback if clicked in button coords
           b['func']();
+        }
+      });
+    });
+
+    // Register mousemove listener on canvas
+    $('#canvas').on('mousemove', (e) => {
+      let offset = $('#canvas').offset();
+      let left = offset.left;
+      let top = offset.top;
+      let x = e.pageX - left;
+      let y = e.pageY - top;
+
+      $('#canvas').css('cursor', 'default');
+      gameWindow.buttonCoords.forEach((b) => {
+        if (y > b['top'] && y < b['top'] + b['height'] &&
+            x > b['left'] && x < b['left'] + b['width']) {
+          // set mouse cursor to finger pointer if hovering over button
+          $('#canvas').css('cursor', 'pointer');
         }
       });
     });
