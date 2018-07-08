@@ -1,5 +1,5 @@
 // Game version
-const VERSION = "0.67";
+const VERSION = "0.7";
 
 // These global constants will serve as the bounds for
 // our player character.
@@ -530,9 +530,11 @@ Window.prototype.render = function(type) {
         this.clearWindow();
       };
       this.drawButton({ title: "Play Again?",
-                        row: 3 }, callback);
+                        col: 1,
+                        row: 4 }, callback);
       this.drawButton({ title: "Exit",
-                        row: 4}, () => { this.exitGame(); });
+                        col: 2,
+                        row: 4 }, () => { this.exitGame(); });
       break;
     case "pause":
       this.message = "Game Paused."
