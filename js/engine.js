@@ -12,6 +12,19 @@
  * This engine makes the canvas' context (ctx) object globally available to make
  * writing app.js a little simpler to work with.
  */
+const winThis = this;
+
+ WebFontConfig = {
+   google:{ families: ['Fascinate'] },
+   active: function(){Engine(winThis);},
+ };
+ (function(){
+   var wf = document.createElement("script");
+   wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.5.10/webfont.js';
+   wf.async = 'true';
+   document.head.appendChild(wf);
+ })();
+
 
 const Engine = ((global) => {
   /* Predefine the variables we'll be using within this scope,
@@ -84,7 +97,7 @@ const Engine = ((global) => {
   function init() {
     reset();
     lastTime = Date.now();
-    startMenu();
+    $(() => startMenu());
     main();
   }
 
@@ -208,4 +221,4 @@ const Engine = ((global) => {
   global.canvas_height = canvas.height;
   global.main = main;
   global.render = render;
-})(this);
+});

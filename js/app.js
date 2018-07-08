@@ -348,7 +348,7 @@ Window.prototype.startMenu = function() {
   this.width = 400;
   this.height = 450;
   this.drawWindow();
-  ctx.font = "700 48px sans-serif"
+  ctx.font = "400 55px 'Fascinate'";
   let grd = ctx.createLinearGradient(0, this.top + 24, 0, this.top + 72);
   grd.addColorStop(0, '#b4e391');
   grd.addColorStop(0.5, '#61c419');
