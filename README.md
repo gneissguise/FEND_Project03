@@ -1,7 +1,7 @@
-#frontend-nanodegree-arcade-game
+# frontend-nanodegree-arcade-game
 ===============================
 
-##How to install and run
+## How to install and run
 
 * Clone this repository into a directory that you have access to:
 `git clone https://github.com/gneissguise/FEND_Project03.git`
@@ -14,7 +14,7 @@
 
 * Open your favorite browser, and navigate to http://localhost:8080/
 
-##How to play
+## How to play
 
 * When you first open the game, you will be brought to the start screen. Your options are:
   * Start Game
@@ -40,12 +40,12 @@ by the bugs!
 
 * To pause the game type __P__ or __ENTER__ on your keyboard; to exit, type __ESC__ 
 
-##Dependencies
+## Dependencies
 
 * jQuery 3.3.1
 * Google Fonts
 
-##Credits
+## Credits
 
 * Game assets and starting game engine template provided by Udacity.
 * Game implementation, animation, complete windowing system, and enhancements to game engine/rendering system by Justin Frost.
