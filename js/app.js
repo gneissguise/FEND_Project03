@@ -10,7 +10,7 @@ const CHAR_MAX_Y = 404;
 const CHAR_STARTING_X = 202;
 const CHAR_STARTING_Y = 404;
 const MOVE_FACTOR = 50.5;
-const _DEBUG = true;
+
 const SPRITES = {
   'stone': 'images/stone-block.png',
   'water': 'images/water-block.png',
@@ -133,9 +133,7 @@ function checkCollisions(player, enemies) {
         (enemy.y + enemy.collision[1]) < (player.y + player.collision[5]) &&
         (enemy.y + enemy.collision[5]) > (player.y + player.collision[1])) {
 
-      // Collision detected
-      //	    particle_explosion.create(ctx, player.x / 2, player.y / 2, 128);
-      //	    particle_explosion.update();
+      // Collision detected, flash screen then reduce player lives
       gamePause = true;
       $("canvas").fadeOut("fast");
       resetAll();
@@ -157,17 +155,14 @@ function checkCollisions(player, enemies) {
 
     // See if player has reached the water,and then increase level and difficulty
     if (player.y <= CHAR_MIN_Y) {
-      console.log("Increase level");
       player.level++;
-      console.log("Increase difficulty");
       player.increaseDifficulty();
-      console.log("Reset player and enemies");
       resetAll();
     }
   }
 }
 
-// Class for a basic windowing system
+// Class for a basic canvas windowing system
 function Window() {
   this.width = 0;
   this.height = 0;
@@ -348,8 +343,8 @@ Window.prototype.startMenu = function() {
   this.width = 400;
   this.height = 450;
   this.drawWindow();
-  ctx.font = "400 55px 'Fascinate'";
-  let grd = ctx.createLinearGradient(0, this.top + 24, 0, this.top + 72);
+  ctx.font = "400 72px 'Fascinate'";
+  let grd = ctx.createLinearGradient(0, this.top + 36, 0, this.top + 72);
   grd.addColorStop(0, '#b4e391');
   grd.addColorStop(0.5, '#61c419');
   grd.addColorStop(1, '#b4e391');
@@ -373,12 +368,10 @@ Window.prototype.startMenu = function() {
 Window.prototype.selector = (function(selection) {
   // selection.obj.url = 'image url'
   // selection.obj.selected = true or false
-  console.log(`selection type: ${typeof selection}`);
   let index = selection.findIndex((a) => a.selected);
 
   return {
     display: function() {
-      console.log(`display - index: ${index}`);
       return selection[index].url;
     },
 
@@ -395,8 +388,6 @@ Window.prototype.selector = (function(selection) {
         index++;
       }
       selection[index].selected = true;
-
-      console.log(`increase - index: ${index}`);
     },
 
     decrease: function() {
@@ -412,8 +403,6 @@ Window.prototype.selector = (function(selection) {
         index--;
       }
       selection[index].selected = true;
-
-      console.log(`decrease - index: ${index}`);
     }
   };
 })(characterObj);
@@ -428,8 +417,6 @@ Window.prototype.drawArrow = function(triangle, callback) {
   let xPoints = [triangle.x1, triangle.x2, triangle.x3];
   let yPoints = [triangle.y1, triangle.y2, triangle.y3];
   drawTriangle(triangle);
-  console.log(`xpoints: ${xPoints}, min: ${minPoint(xPoints)}, max: ${maxPoint(xPoints)}`);
-  console.log(`ypoints: ${yPoints}, min: ${minPoint(yPoints)}, max: ${maxPoint(yPoints)}`);
 
   this.buttonCoords.push({
     'row': 0,
@@ -749,7 +736,6 @@ const player = new Player();
 // launch the button callback.
 const checkExist = setInterval(() => {
   if ($('#canvas').length) {
-    console.log('Found the canvas');
     clearInterval(checkExist);
 
     // Register an onclick event for the canvas
@@ -815,7 +801,6 @@ document.addEventListener('keyup', (e) => {
       gameWindow.render('exit');
     }
   }
-  console.log("key code: " + e.keyCode);
 
   // Only allow player to control character when not Paused
   // (When menus are displayed, the game is paused by default and

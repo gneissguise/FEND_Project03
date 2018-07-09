@@ -12,8 +12,13 @@
  * This engine makes the canvas' context (ctx) object globally available to make
  * writing app.js a little simpler to work with.
  */
+
+
+// Saving this' current scope to winThis
 const winThis = this;
 
+// Object to load google font, then launch the Engine function with
+// the scope of winThis.
  WebFontConfig = {
    google:{ families: ['Fascinate'] },
    active: function(){Engine(winThis);},
